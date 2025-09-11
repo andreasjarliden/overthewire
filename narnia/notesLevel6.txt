@@ -1,0 +1,12 @@
+fp BP-0x0C i.e. fp is above on the stack
+b1 BP-0x14
+b2 BP-0x1C
+Possible to overwrite fp
+But the if statement means that we let fp point to the stack
+But the regular libc functions are not on the stack and loaded elsewhere!
+system is at 0xf7dc d430 (by using gdb)
+The program has helpfully already set the ruid=euid
+It is easy to overflow fp with system by overflowing b1 with 12345678\x30\xd40\xdc\xf7
+To get an interactive shell, replace 123...8 with <sh #    >
+
+pw for level 7 54RtepCEU0
