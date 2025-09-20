@@ -1,0 +1,35 @@
+/tmp/tmp.guB0cM1OZS
+
+$ ltrace /behemoth/behemoth2
+__libc_start_main(0x80490fd, 1, 0xffffd434, 0 <unfinished ...>
+getpid()                                                                = 1690712
+sprintf("touch 1690712", "touch %d", 1690712)                           = 13
+lstat(0xffffd2ea, 0xffffd2f8, 0x19cc58, 0x804920b)                      = 0xffffffff
+unlink("1690712")                                                       = -1
+geteuid()                                                               = 13002
+geteuid()                                                               = 13002
+setreuid(13002, 13002)                                                  = 0
+system("touch 1690712" <no return ...>
+--- SIGCHLD (Child exited) ---
+<... system resumed> )                                                  = 0
+sleep(2000
+
+will perform cat pid after the sleep!
+
+S_IFBLK 6000
+S_IFLNK a000
+S_IFREG 8000
+b
+
+If lstat on <pid> is not a regular file, then it is unlinked first and then replaced by running touch.
+
+After the sleep, `cat <pid>` is run.
+
+I.e. while the program sleeps, replace pid with a symlink to the password file.  Are we allow to do that? Yes, the pid files are owned by behemoth2
+
+I.e. /behemoth/behemonth2 >password &
+disown %1
+While it is running, replace the pid file with a symlink to the password
+Wait.
+
+Password for level 3 JQ6tZGqt0i
