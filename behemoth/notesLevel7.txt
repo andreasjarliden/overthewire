@@ -1,0 +1,11 @@
+
+
+│           0x080491b9      81ec0c020000   sub esp, 0x20c
+│           0x080491bf      8b450c         mov eax, dword [envp] // This is prob argv instead
+│           0x080491c2      8b4004         mov eax, dword [eax + 4]
+│           0x080491c5      8945fc         mov dword [var_4h], eax // This is argv[1]
+│           0x080491c8      c745f80000..   mov dword [var_8h], 0
+
+Only 512 first bytes are checked for shell codes
+Still possible to overflow return code and jump to address within argv1
+Construct a recreated C program to figure out the address of argv1
